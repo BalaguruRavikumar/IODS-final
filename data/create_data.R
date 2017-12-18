@@ -29,16 +29,16 @@ data$deep <- rowMeans(select(data, one_of(deep_questions)))
 data$surf <- rowMeans(select(data, one_of(surface_questions)))
 data$stra <- rowMeans(select(data, one_of(strategic_questions)))
 
-#Chnage column names:
+#Change column names:
 colnames(data)[which(colnames(data) =="Age")] <- "age"
 colnames(data)[which(colnames(data) =="Attitude")] <- "attitude"
 colnames(data)[which(colnames(data) =="Points")] <- "points"
 
-#Filtering columns from data
+#Filtering columns from data and remove points that are zero
 columns_to_keep <- c("gender","age","attitude", "deep", "stra", "surf", "points")
 analysis_data <- filter(select(data, one_of(columns_to_keep)), points != 0)
 
 #Writing data:
-write.table(analysis_data, file = "data/inputforregression.txt",col.names = TRUE)
+write.table(analysis_data, file = "data/inputfinalassign.txt",col.names = TRUE)
 
 
