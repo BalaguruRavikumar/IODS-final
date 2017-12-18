@@ -150,8 +150,8 @@ $(document).ready(function () {
 </div>
 <div id="research-questions-hypothesis" class="section level2">
 <h2>Research questions &amp; Hypothesis:</h2>
-<p>The dataset that I am would be exploring is complied as a part of a survey on teaching and learning that was conducted as a research project made possible by the <em>Academy of Sciences</em>. Certain missing values of some backgrounds were imputed. The dataset consists of various questionaries from students to understand the relationship between learning apporaches and students achivements in Statistics in Finland.<br />
-The reasecrh question that I will be addressing in this assignment are as follows:</p>
+<p>The dataset that I would be exploring is complied as a part of a survey on teaching and learning that was conducted as a research project made possible by the <em>Academy of Sciences</em>. Certain missing values of some backgrounds were imputed. The dataset consists of various questionaries from students to understand the relationship between learning apporaches and students achivements in Statistics in Finland.<br />
+The reseacrh question that I will be addressing in this assignment are as follows:</p>
 <ul>
 <li>What are the factors/variables that explains the preformances of a given student in statistics based on the answers from the survey questions through a <strong>regression model</strong>?<br />
 </li>
@@ -159,7 +159,7 @@ The reasecrh question that I will be addressing in this assignment are as follow
 </li>
 <li>My modeling hypothesis is: students/reposndents who are porne to strategic thinking and have a positive attitude towards statistics would be securing high exam points in statistics.</li>
 </ul>
-<p>The link to the Data wrangling script that generates the input data for the below analysis is given <a href="https://balagururavikumar.github.io/IODS-final/">here</a>.</p>
+<p>The link to the Data wrangling script that generates the input data for the below analysis is given <a href="https://github.com/BalaguruRavikumar/IODS-final/blob/master/data/create_data.R">here</a>.</p>
 </div>
 <div id="data-description" class="section level2">
 <h2>Data description:</h2>
@@ -434,7 +434,7 @@ table(high_use = cdata$high_score, prediction = cdata$prediction)</code></pre>
 <pre class="r"><code>#10 fold corss-validation:
 cv &lt;- cv.glm(data = c_data, cost = loss_func, glmfit = log_model2, K = 10)
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.3554217</code></pre>
+<pre><code>## [1] 0.3614458</code></pre>
 <p>The logistic model was evlauted using a loss function with assigns penality for the ratio of wrong full predictions. The loss penality of <strong>log_model2</strong> was 0.337. This value was similar when mearly the <strong>attitude</strong> variable was used <em>(log_model3)</em>. To further improve the preformance of the model, a 10-fold cross-validation was preformed. The penailty of <strong>Cross-valiated</strong> model was 0.34, whihc was fairly similar to <strong>log_model2</strong>.</p>
 </div>
 </div>
