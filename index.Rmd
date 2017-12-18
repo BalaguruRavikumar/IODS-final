@@ -1,22 +1,145 @@
 ---
 title: "IODS Final Assignment"
 author: "Balaguru Ravikumar"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   html_document:
     theme: cosmo
-    toc: true
     toc_depth: 2
     fig_caption: true
     fig_width: 6
     fig_height: 4
     code_folding: hide
 ---
+<balaguru.ravikumar@helsinki.fi>
 
-##Test: Index.html
-  
+##Abstract:
+Identifying a suitable model and set of variables that explain and predict a students exam score in statistics is the objective of the assignment. I have addressed this by implemneting two different models at various settings (number of explanantory variables) included in the model. The two models tested in this study were a linear regression model, implemented through the standard R languages and a logistic regression model implemeneted throught the glmnet package in R. The models were subjeted to cross-validation to estimate the genrelaizialibilty of the model using the boot package in R. In the both the model implemnetation, it was found that explanatory variables, answers to stategric questions and a students attitude towards statistics were the two attributes that were strongly asscoiated with the outcome (exam points). I further found that the current model imnplementations and independent varaibles best suit a classification algorithim as a regression implemenetaion was less accurate. 
+
+##Research questions & Hypothesis:
+The dataset that I would be exploring is complied as a part of a survey on teaching and learning that was conducted as a research project made possible by the *Academy of Sciences*. Certain missing values of some backgrounds were imputed. The dataset consists of various questionaries from students to understand the relationship between learning apporaches and students achivements in Statistics in Finland.  
+The reseacrh question that I will be addressing in this assignment are as follows:  
+
+* What are the factors/variables that explains the preformances of a given student in statistics based on the answers from the survey questions through a **regression model**?  
+* Is it possible to significantly classifiy the preformance (high/low) of a given stduent based on certain explanatroy varibales in the dataset through a **logistics regression model**?  
+* My modeling hypothesis is: students/reposndents who are porne to strategic thinking and have a positive attitude towards statistics would be securing high exam points in statistics.  
 
 
+The link to the Data wrangling script that generates the input data for the below analysis is given [here](https://github.com/BalaguruRavikumar/IODS-final/blob/master/data/create_data.R). 
 
+##Data description:
+###Reading the data:
+####Libraries required:
+```{r}
+library(GGally)
+library(ggplot2)
+library(dplyr)
+library(boot)
+```
 
+```{r}
+rdata <- read.table('data/inputfinalassign.txt', header=TRUE)
+cdata <-  mutate(rdata, high_score = points > median(rdata$points))
+head(cdata, n = 10)
+str(cdata)
+colnames(cdata)
+```
+* This initial dataset documents the responses from 183 students.
+* The initial dataset was curated such that it contains `r dim(data)[1]` respondents and `r dim(data)[2]` factors. Factors/Parameters such as **age, gender, attitutde, deep questions, durface questions, strategic questions and the exam points secured by the students**  are given as column names.
+* Further curation was carried such that only the avergae values from questionaries *deep questions, durface questions, strategic questions* were used and only responder with exam points *greater than zero* are used, resulting 166 respondents over 7 factors.
+* This dataset, **rdata** will be used to build a regression model.
+* The **points** varaible from the *rdata* was classified based on high exam scores or low exam scores from their median value of 23.
+* The new dataset that includes of the class varaible **high_score** was saved as **cdata** as an input for a logistic regression model, thereby now consists of 166 respondents with 8 factors.
 
+##Visual Exploration of data:
+```{r}
+ggpairs(rdata, mapping = aes(col = gender, alpha  = 0.3), lower = list(combo = wrap("facethist", bins = 20)), title = "A. Regression data variable distribution and correlations")
+ggplot(cdata, aes(x = high_score, y = stra, col = gender)) +geom_boxplot() + ggtitle("B. High exam score vs Strategic questions")
+ggplot(cdata, aes(x = high_score, y = attitude, col = gender)) + geom_boxplot() + ggtitle("C. High exam score vs Attitude")
+```
 
+###From the above graphical plots, it is possible to acertain the following:    
+1. The number of female respondents were high than the number of male respondents.  
+2. All the paramaeters are distributed close to a normal distrbution *(fig.A)*.  
+3. The average age and exams points of the respondents is 25 and 22 respectively.  
+5. With respect to statergic question alone, some responders were able to secure a full mark of 5.  
+6. There exist a positive correlation between the exam points secured and a responders attitude towards statistics *(fig.A)*.  
+7. There are no as such strong negative correlations of various paramaters and the exam points secured *(fig.A)*.  
+8. From the *fig.A* the variables with a positive correlations, **stra & attitude** were visulaized using **gender** as a factor variable to analysis their relation with the obtained high exam points *(fig.B & fig.C)*.
+
+##Methdos descriptions:
+As specified earlier, two different models **(regression/classficiation)** will be used to analysis the datasets. The exam points obtained by each of the 166 students will be the dependent varaible in both the cases and all the other variables will be used as an explanatory variables. Through a **Linear Regression model**  the objective is to find a linear combination of significant explanatory varaibles that better explains the outcomes **points**. Thereby aiding in predicting the possible exam points that a respondent would secure by mearly using their answers to the questionaries. Through a **logictic regression model**, the objective is to find the pausbile explanatory varaibles that better explains the outcomes classes, either *high or low exams points* that a reposndent would secure.
+ 
+##Regression model analysis:
+```{r}
+my_reg_model1 <- lm(points ~. , data = rdata)
+summary(my_reg_model1)
+
+my_reg_model2 <- lm(points ~ attitude, data = rdata)
+summary(my_reg_model2)
+```
+The dependent/target variable used in the above model are the exam points obtained by the students, the independent/explanatory variable are various parameters such as attitute, age, and marks of questionaries from deep, statergic and surface questions. The objective is to use these explanatory variables to explain the distribution of exam points. The model being a multiple-linear model there are co-efficients (alpha) for the intercept and the various explanatory variables (Beta1, Beta2 and Beta3). The significance of these co-efficients are highlithed by the associated P-values and t values. There are various levels of significance (90%, 95% and 99%) indicated as *\** signs. These P-values are generated from a null distribution which gives us the risk of obatining such estimates for the co-efficients by chance. **my_reg_model1** utiliizes all the independent varaibles present in the input data. From the summary of the generated model, it was found that apart from **attitude** all the other explanatory variables were found to be insignificant. Hence the another model **my_reg_model2** was generated using only the significant explanatory variable **attitude** from the dataset.
+
+###Result interpretation:
+From the summary of the models it can be concluded that **attitude** is the only explanatory variable that explains the variance in the target variable **points** with certain degree of significance and with a lower standard error. All the other parameters in the model that show close to zero correlation with the depenedent variable lacked any significance in explaining the **points** variable. Intercept is a constant addition for the target variable estimate when explaining it using the above mentioned independent variables. Based on this model for every 0.34 increase in attitude varibale one can expect **11 (intercept) + 1 = 12** increase to the **points** variable.
+
+The **Multiple R-squared** value of the models were close to 0.207. Thus the currently implemented multiple regression model is only 20.5% successful in predicting the depenedent **points** variable. Ths value might increase or decrease with the addition of new parameters. To avoid case of model overfitting one must look into the **Adjusted R-squared** as it penalizes for the number of independent variables used to explain the data. In both the case it is always better to have a larger R-squared value, as the model will be more likely to predict the outcomes successfully.
+
+###Model Validation:
+```{r}
+par(mfrow = c(2,2))
+plot(my_reg_model2, which = c(1,2,5))
+```
+
+The above diagnostic plots were used to evaluate the generated model.
+1. From the **Residual vs Fiited** plot we can ascertain that the residuals of the model are randomly distributed and there are not as co-linear pattterns in the residulas that the model fails to include.
+2. The normality assumption of residual from the model holds true as the **Normal Q-Q** plots shows that the residuals lying fairly close to the normal line, though there deviations in the right and left tails.
+3. Through the **Resdiuals vs Leverage** we can conclude that that are no major outliers in the data, that biases our regression model.
+
+##Logistic regression model anslysis:
+```{r}
+log_model1 <- glm(high_score ~ ., data = cdata, family = "binomial")
+summary(log_model1)
+
+log_model2 <- glm(high_score ~ stra+attitude, data = cdata, family = "binomial")
+summary(log_model2)
+
+log_model3 <- glm(high_score ~ attitude, data = cdata, family = "binomial")
+summary(log_model3)
+```
+Using logistic regression three classification models were developed. **log_model1** includes all the independent variables in the dataset, and as expected non of the varaibles were signifcant in explaining the high and low score classes of the dataset. Hence based on the visuaa exploratioin of the dataset, the variables **stra, attitude** that showed a positive correlation with the exam points were used to generate **log_model2**, in this cases both the varaibles significantly associcated with the classes in high scores, but the variable **stra** was signifcant at an aplha value of **0.1**, whereas **attitude**  was signifcant at an aplha value of **0**, hence **log_model3** was developed using only **attitude** as the explanatory variable.
+
+###Result interpretation:
+```{r}
+OR <- coef(log_model2) %>% exp
+CI <- confint(log_model2) %>% exp
+cbind(OR,CI)
+```
+
+* From the summary of the model the explanatory variables that was evident in explaining the high alcohol consumption was the **stra & attitude** variables which along with the intercept had a higher level of significance shown through the P-values.  
+* Based on the exponents of the coefficients values of the models i.e, **Odds Ratio** It was possible to ascertain that variables stra & attitude having **OR's > 1** are positively asscoiated to successfuly association with obtained high exam scores.
+* Through the CI caluctaion it can be found that the OR's at 95% confidence (2.5% left tail and 97.5% right tail), we can be say the such OR values of the our explanatory variables in the model has 95% probability to fall between the ranges given in the columns **(2.5 & 97.5)**
+
+###Model Validation:
+```{r}
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+#Penality of log_model2:
+c_data <- cdata
+probabilities <- predict(log_model2, type = "response")
+cdata <- mutate(cdata, probability = probabilities)
+cdata <- mutate(cdata, prediction = probability > 0.5)
+table(high_use = cdata$high_score, prediction = cdata$prediction)
+loss_func(class = cdata$high_score, prob = cdata$probability)
+
+#10 fold corss-validation:
+cv <- cv.glm(data = c_data, cost = loss_func, glmfit = log_model2, K = 10)
+cv$delta[1]
+```
+The logistic model was evlauted using a loss function with assigns penality for the ratio of wrong full predictions. The loss penality of **log_model2** was 0.337. This value was similar when mearly the **attitude** variable was used *(log_model3)*. To further improve the preformance of the model, a 10-fold cross-validation was preformed. The penailty of **Cross-valiated** model was 0.34, whihc was fairly similar to **log_model2**.
+
+##Conclusion and discussion:
+In-line with my modeling hypothesis both the regression and classification models, identified the independent variables **stra & attitude** i.e. the answers for statergic questions and their general attitude towards statistics, to be significantly in predicting or classifying the exam points secured by the students. Though both the varaibles had significant P-values in both the models, the varaible **attitude** was found to be highly significnat in the explaining the outcomes of exam points. Further when using a **regression model** it was found that **Multiple R-squared** value of the model was 0.205, thereby is only 20% accurate in predictions, whereas in the **classification model** the **Odds-Ratio** of the **attitude** was always **>1** at various ranges of confidence interval **CI**, hence strangly exapning their association in classification of exam score. Based on the current analysis we can conclude that generated classification model would be best suitable in classfiying the exam points of the respondents, whereas a regression model though can be used to predic the exam outcome will only be accurate 20% of the time. 
